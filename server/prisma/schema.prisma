@@ -1,0 +1,187 @@
+// Salesyn CRM Database Schema
+// Supported Providers: sqlite (default dev), postgresql (production)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  role         String   @default("SALES_EXECUTIVE") // ADMIN, SALES_MANAGER, SALES_EXECUTIVE
+  phone        String?
+  avatar       String?
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedLeads         Lead[]         @relation("AssignedLeads")
+  createdLeads          Lead[]         @relation("CreatedLeads")
+  assignedCustomers     Customer[]     @relation("AssignedCustomers")
+  assignedOpportunities Opportunity[]  @relation("AssignedOpportunities")
+  interactions          Interaction[]
+  assignedFollowUps     FollowUp[]     @relation("AssignedFollowUps")
+  assignedTasks         Task[]         @relation("AssignedTasks")
+  createdTasks          Task[]         @relation("CreatedTasks")
+  notifications         Notification[]
+  activityLogs          ActivityLog[]
+}
+
+model Lead {
+  id                  String    @id @default(uuid())
+  name                String
+  company             String?
+  email               String
+  phone               String?
+  source              String    @default("Website") // Website, Referral, Social Media, Email Campaign, Cold Call, Advertisement, Event, Other
+  status              String    @default("New") // New, Contacted, Qualified, Proposal Sent, Negotiation, Won, Lost
+  priority            String    @default("Medium") // Low, Medium, High
+  estimatedValue      Float     @default(0)
+  score               Int       @default(50)
+  scoreCategory       String    @default("Warm") // Hot, Warm, Cold
+  notes               String?
+  isConverted         Boolean   @default(false)
+  convertedAt         DateTime?
+  convertedCustomerId String?
+  assignedToId        String?
+  createdById         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  assignedTo    User?         @relation("AssignedLeads", fields: [assignedToId], references: [id])
+  createdBy     User?         @relation("CreatedLeads", fields: [createdById], references: [id])
+  interactions  Interaction[]
+  followUps     FollowUp[]
+  opportunities Opportunity[]
+  tasks         Task[]
+}
+
+model Customer {
+  id           String   @id @default(uuid())
+  name         String
+  company      String?
+  email        String
+  phone        String?
+  address      String?
+  city         String?
+  state        String?
+  country      String?
+  notes        String?
+  assignedToId String?
+  leadId       String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  assignedTo    User?         @relation("AssignedCustomers", fields: [assignedToId], references: [id])
+  opportunities Opportunity[]
+  interactions  Interaction[]
+  followUps     FollowUp[]
+  tasks         Task[]
+}
+
+model Opportunity {
+  id                String    @id @default(uuid())
+  title             String
+  customerId        String?
+  leadId            String?
+  assignedToId      String?
+  value             Float     @default(0)
+  probability       Int       @default(50)
+  stage             String    @default("New Lead") // New Lead, Contacted, Qualified, Proposal Sent, Negotiation, Won, Lost
+  expectedCloseDate DateTime?
+  description       String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  customer   Customer? @relation(fields: [customerId], references: [id])
+  lead       Lead?     @relation(fields: [leadId], references: [id])
+  assignedTo User?     @relation("AssignedOpportunities", fields: [assignedToId], references: [id])
+}
+
+model Interaction {
+  id         String   @id @default(uuid())
+  type       String   // Phone Call, Email, Meeting, Video Call, WhatsApp, Note, Other
+  subject    String
+  notes      String?
+  outcome    String?
+  date       DateTime @default(now())
+  userId     String
+  leadId     String?
+  customerId String?
+  createdAt  DateTime @default(now())
+
+  user     User      @relation(fields: [userId], references: [id])
+  lead     Lead?     @relation(fields: [leadId], references: [id])
+  customer Customer? @relation(fields: [customerId], references: [id])
+}
+
+model FollowUp {
+  id             String   @id @default(uuid())
+  title          String
+  type           String   @default("Call") // Call, Email, Meeting, Demo, Other
+  date           DateTime
+  time           String?
+  notes          String?
+  status         String   @default("Scheduled") // Scheduled, Completed, Cancelled, Missed
+  assignedUserId String?
+  leadId         String?
+  customerId     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  assignedUser User?     @relation("AssignedFollowUps", fields: [assignedUserId], references: [id])
+  lead         Lead?     @relation(fields: [leadId], references: [id])
+  customer     Customer? @relation(fields: [customerId], references: [id])
+}
+
+model Task {
+  id                String    @id @default(uuid())
+  title             String
+  description       String?
+  priority          String    @default("Medium") // Low, Medium, High
+  status            String    @default("Pending") // Pending, In Progress, Completed
+  dueDate           DateTime?
+  assignedToId      String?
+  createdById       String?
+  relatedLeadId     String?
+  relatedCustomerId String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  assignedTo      User?     @relation("AssignedTasks", fields: [assignedToId], references: [id])
+  createdBy       User?     @relation("CreatedTasks", fields: [createdById], references: [id])
+  relatedLead     Lead?     @relation(fields: [relatedLeadId], references: [id])
+  relatedCustomer Customer? @relation(fields: [relatedCustomerId], references: [id])
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  message   String
+  type      String   @default("INFO") // INFO, WARNING, SUCCESS, URGENT
+  read      Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model ActivityLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  details    String?
+  createdAt  DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id])
+}

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="salesynGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#818cf8"/>
+      <stop offset="50%" stop-color="#6366f1"/>
+      <stop offset="100%" stop-color="#4338ca"/>
+    </linearGradient>
+    <linearGradient id="salesynAccent" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#818cf8"/>
+    </linearGradient>
+  </defs>
+  <rect width="100" height="100" rx="24" fill="url(#salesynGrad)"/>
+  <!-- Abstract S curve with connection nodes -->
+  <path d="M70 32C70 25.3726 62.8366 20 54 20C43 20 32 25 32 35C32 46 68 44 68 56C68 67 56 72 44 72C34.5 72 28 66 28 60" 
+        stroke="white" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Synchronization Node Circles -->
+  <circle cx="70" cy="32" r="5" fill="url(#salesynAccent)" stroke="white" stroke-width="2"/>
+  <circle cx="28" cy="60" r="5" fill="url(#salesynAccent)" stroke="white" stroke-width="2"/>
+</svg>
