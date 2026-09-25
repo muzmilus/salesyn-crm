@@ -167,7 +167,7 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-## 🔒 Security Measures
+## 🔒 Security Measures DONE BY BHATTA
 
 - Passwords salted and hashed with `bcryptjs`.
 - HTTP Bearer Tokens verified with `jsonwebtoken`.
